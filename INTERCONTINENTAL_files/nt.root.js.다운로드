@@ -1,0 +1,640 @@
+/*  ninetree javascript library(ninejs), version 1.0.0.1
+ *  (c) 2011- ninetree
+ *
+ *  ninejs is freely distributable under the terms of an MIT-style license.
+ *  For details, see the ninetree web site: http://www.ninetree.com
+ *  For bug, mail to powbomb@ninetree.com
+ *--------------------------------------------------------------------------*/
+var nineTree={};
+nineTree.NoCacheURL = function (uri){return uri.concat(/\?/.test(uri)?"&":"?","noCache=",(new Date).getTime(),".",Math.random()*1234567)};
+function n$(id) 
+{
+	return document.getElementById(id);
+}
+function nn$(name) 
+{
+	return document.getElementsByName(name);
+}
+function nf$(fname, name) 
+{
+	var tform=n$(fname);
+	if(tform)
+		return eval("tform."+name);
+	return null;
+}
+function in$(tobj)
+{
+	return (typeof tobj=="undefined" || tobj==null);
+}
+
+String.prototype.trim = function() {
+	return this.replace(/(^\s*)|(\s*$)/g, "");
+};
+
+String.prototype.right = function(len) {
+	return this.substr(this.length-len, len);
+};
+
+String.prototype.left = function(len) {
+	return this.substr(0, len);
+};
+
+String.prototype.checkNumeric = function() {
+	/*
+	return
+	P1: integer >=0
+	M1: integer < 0
+	
+	P2: float >= 0
+	M2: float < 0
+	
+	'': NaN
+	*/
+	var tg=this.trim();
+	var rex = /^(\+|-|[0-9])[0-9]*$/g;
+	if(rex.test(tg))
+	{
+		return (tg.indexOf("-")==0?"M":"P")+"1"; //integer
+	}
+	rex = /^(\+|-|[0-9])[0-9]*\.{0,1}[0-9]*$/g;
+	if(rex.test(tg))
+	{
+		return (tg.indexOf("-")==0?"M":"P")+"2"; //float
+	}
+	return "";
+};
+
+String.prototype.isNumber = function() {
+	var tg=this.trim();
+	var rex = /^[0-9]*$/g;
+	return rex.test(tg);
+};
+
+String.prototype.checkDate = function() {
+	var tg=this.trim();
+	
+	var rex = /^[0-9]{4}\-((0[1-9])|(1[0-2]))\-((0[1-9])|([1-2][0-9])|(3[0-1]))$/;
+	if(rex.test(tg))
+	{
+		return "DATE";
+	}
+	rex = /^(([0-1][0-9])|(2[0-3]))(:[0-6][0-9]){1,2}$/;
+	if(rex.test(tg))
+	{
+		return "TIME";
+	}
+	rex = /^[0-9]{4}\-((0[1-9])|(1[0-2]))\-(([0-2][0-9])|(3[0-1])) (([0-1][0-9])|(2[0-3]))(:[0-6][0-9]){1,2}$/;
+	if(rex.test(tg))
+	{
+		return "DATETIME";
+	}
+	return "";
+};
+
+String.prototype.checkEmail = function () {	
+	var strEmail=this;
+	var rexp=/^[A-Za-z0-9_-]([A-Za-z0-9_-]|\.)*@[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)+$/;
+	return rexp.test(strEmail);
+	
+};
+
+String.prototype.checkIP = function () {	
+	var strIP=this;
+	var rexp = /^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$/;
+	if (rexp.test(strIP)) {
+		var arrIP=strIP.split(".");
+		for (var i = 0; i <= arrIP.length; i++) {
+			if (parseInt(arrIP[i],10) > 255)  return false;
+   		}
+	}
+	else
+		return false;
+	return true;
+};
+/** 
+ * 한글/영어만
+ */
+String.prototype.isKorEng = function() {
+	return (/^[가-힣 a-z A-Z]+$/).test(this.removeAll(arguments)) ? true : false;
+};
+
+
+/**
+ * 영어 체크 - arguments : 추가 허용할 문자들
+ */
+String.prototype.isEng = function() {
+	return (/^[a-z A-Z]+$/).test(this.removeAll(arguments)) ? true : false;
+};
+
+/**
+ * 영어 체크 - arguments : 추가 허용할 문자들
+ */
+String.prototype.isEngName = function() {
+	return (/^[a-z A-Z]+$/).test(this.removeAll(arguments)) ? true : false;
+};
+
+/**
+ * 특수 문자 체크
+ */
+String.prototype.specChar = function(){
+	return (/[~!#$^&*++|:;?"<,>'%@]/).test(this.removeAll(arguments)) ? true : false;
+};
+
+/**
+ * 숫자와 영어로 구성되어있는지 체크 - arguments : 추가 허용할 문자들
+ */
+String.prototype.isEngNum = function() {
+	return (/^[-_.0-9a-zA-Z]+$/).test(this.removeAll(arguments)) ? true : false;
+};
+
+
+/**
+ *  숫자 체크
+ */
+String.prototype.isNum = function() {
+	return (/^[0-9]+$/).test(this.removeAll(arguments)) ? true : false;
+};
+
+
+/**
+ * 한글 체크 - arguments : 추가 허용할 문자들
+ */
+String.prototype.isKor = function() {
+	return (/^[가-힣]+$/).test(this.removeAll(arguments)) ? true : false;
+};
+
+
+/**
+ * 이메일 유효성 체크
+ */
+String.prototype.isEmail = function() {
+	//return (/\w+([-+.]\w+)*@\w+([-.]\w+)*\.[a-zA-Z]{2,4}$/).test(this.trim());
+	
+	return (/^[A-Za-z0-9_-]([A-Za-z0-9_-]|\.)*@[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)+$/).test(this.trim());
+};
+
+String.prototype.removeScript = function () {	
+	
+	//var rexp = /\s*<script(.|\s|\f|\r|\n|\t)*<\/script>\s*/ig;
+	//var rexp = /\s*<script[^<]*<\/script>\s*/ig;
+	//var rexp = /<script(?!(.|\s|\f|\r|\n|\t)*<script(.|\s|\f|\r|\n|\t)*<\/script>)(.|\s|\f|\r|\n|\t)*<\/script>/ig;
+	
+	var tval = this;
+	
+	var tlen=-1;
+	while(true)
+	{
+		tlen=tval.length;
+		var rexp = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/ig;
+		tval=tval.replace(rexp, "");
+		/*
+		alert(tval);
+		rexp = /<script(.|\s|\f|\r|\n|\t)*<script(.|\s|\f|\r|\n|\t)*<\/script>(.|\s|\f|\r|\n|\t)*<\/script>/ig;
+		tval=tval.replace(rexp, "");
+		alert(tval);
+		rexp = /<script(.|\s|\f|\r|\n|\t)*(<script|<\/script>)(.|\s|\f|\r|\n|\t)*<\/script>/ig;
+		tval=tval.replace(rexp, "");
+		alert(tval);
+		var rexp = /<script(.|\s|\f|\r|\n|\t)*<\/script>/ig;
+		tval=tval.replace(rexp, "");
+		alert(tval);*/
+		if(tlen==tval.length)
+			break;
+		
+	}
+	return tval;
+};
+
+String.prototype.removeHTMLTags = function () {	
+	
+	var rexp = /[\f\t\v\u00A0\u2028\u2029]*<[a-zA-Z]+[^>]*>/g;
+	var tval = this.removeScript();
+	tval=tval.replace(rexp, "");
+	rexp = /<\/[a-zA-Z]+\s*>[\f\t\v\u00A0\u2028\u2029]*/g;
+	tval=tval.replace(rexp, "");
+	return tval;
+};
+
+String.prototype.toDate = function () { //parseTime(time)
+/////////////////////////////////////////////////////
+// String "YYYY-MM-DD HH:MI:SS" -> Date Object
+	var year  = 2000;
+    var month = 0; // JANUARY=0,DECEMBER=11
+    var day   = 1;
+    var hour = 0;
+    var min = 0;
+    var sec = 0;
+    var tdate="";
+    var ttime="";
+    var tdtype=this.checkDate();
+    
+    if(tdtype=="DATETIME")
+	{
+		tdate=this.trim().split(" ")[0];
+		ttime=this.trim().split(" ")[1];
+	}
+    else if(tdtype=="DATE")
+    	tdate=this.trim();
+    else if(tdtype=="TIME")
+    	ttime=this.trim();
+    else
+    	return null;
+    
+    if(tdate!="") {
+		year  = tdate.split("-")[0];
+	    month = tdate.split("-")[1]; 
+	    month = parseInt(month, 10)-1;
+	    day   = tdate.split("-")[2];
+	}
+	
+	if(ttime!="") {
+		hour  = ttime.split(":")[0];
+	    min = ttime.split(":")[1]; 
+	    if(ttime.split(":").length>2)
+	    	sec   = ttime.split(":")[2];
+	}
+	
+	
+    return new Date(year,month,day,hour,min, sec);
+};
+String.prototype.replaceFrom= function(exp, rstr, sindex, eindex)
+{
+	var theader = "";
+	var tbody = this;
+	var ttail = "";
+	if(sindex)
+	{
+		theader=this.substring(0, sindex);
+		tbody = this.substring(sindex, this.length);
+	}
+	
+	if(eindex && eindex-sindex+1>0)
+	{
+		ttail = tbody.substring(eindex-sindex+1, tbody.length);
+		tbody = tbody.substring(0, eindex-sindex+1);
+		
+	}
+	return theader+tbody.replace(exp, rstr)+ttail;
+};
+
+Math.ceil2 = function(n, numDigitsAfterDecimal)
+{
+	if(numDigitsAfterDecimal<1)
+		throw "numDigitsAfterDecimal>1";
+	var offset = Math.pow(10, numDigitsAfterDecimal-1);
+	return Math.ceil(n*offset)/offset;
+};
+Math.floor2 = function(n, numDigitsAfterDecimal)
+{
+	if(numDigitsAfterDecimal<1)
+		throw "numDigitsAfterDecimal>1";
+	var offset = Math.pow(10, numDigitsAfterDecimal-1);
+	return Math.floor(n*offset)/offset;
+};
+Math.round2 = function(n, numDigitsAfterDecimal)
+{
+	if(numDigitsAfterDecimal<1)
+		throw "numDigitsAfterDecimal>1";
+	var offset = Math.pow(10, numDigitsAfterDecimal-1);
+	return Math.round(n*offset)/offset;
+};
+
+Number.prototype.toRadian = function()
+{
+	return this*2*Math.PI/360;
+};
+Number.prototype.toDegree = function()
+{
+	return this*360/(2*Math.PI);
+};
+Number.prototype.toAbsRadian = function()
+{
+	return this.toDegree().toAbsDegree().toRadian(); 
+};
+Number.prototype.toAbsDegree = function()
+{
+	var d=this;
+	d=d-Math.floor(d/360)*360;
+	return d; 
+};
+Number.prototype.formatString = function(numDigitsAfterDecimal, numdigits, bwithcomma)
+{
+	
+	var num = this;
+	var mp = num.toString().substring(0,1);
+	if(mp=="-")
+	{
+		num=-num;
+	}
+	var tnum = num;
+	
+	if(numDigitsAfterDecimal)
+		tnum=(Math.round(num*Math.pow(10, numDigitsAfterDecimal))/Math.pow(10, numDigitsAfterDecimal)).toString();
+	tnum = tnum.toString();
+	var numDecimal = tnum.toString();
+	var afterDecimal = "";
+	if(tnum.indexOf(".")!=-1)
+	{
+	 	numDecimal = tnum.split(".")[0];
+	 	afterDecimal = tnum.split(".")[1];
+	}
+	if(numdigits)
+	{
+		if(numDecimal.length<numdigits)
+		{
+			var tad=numDecimal.length;
+			for(var i=0;i<numdigits-tad;i++)
+			{
+				numDecimal="0"+numDecimal;
+			}
+		}
+	}
+	if(numDigitsAfterDecimal)
+	{
+		if(afterDecimal.length<numDigitsAfterDecimal)
+		{
+			var tad=afterDecimal.length;
+			for(var i=0;i<numDigitsAfterDecimal-tad;i++)
+			{
+				afterDecimal+="0";
+			}
+		}
+	}
+	var tcnt = 1;
+	var retval="";
+	while(true)
+	{
+		if(numDecimal.length-tcnt*3<=0)
+		{
+			if(retval!="" && bwithcomma)
+				retval=","+retval;
+			retval=numDecimal.substring(0, numDecimal.length-(tcnt-1)*3)+retval;
+			break;
+		}
+		if(retval!="" && bwithcomma)
+			retval=","+retval;
+		retval=numDecimal.substring(numDecimal.length-tcnt*3, numDecimal.length-tcnt*3+3)+retval;
+		tcnt++;
+	}
+	
+	
+	
+	if(afterDecimal!="")
+		retval=retval+"."+afterDecimal;
+	if(mp=="-")
+		retval="-"+retval;
+		
+		
+	return retval;
+};
+
+//Date
+Date.prototype.dateAdd = function (interval, num){
+    var thing = new String();
+    
+    
+   interval = interval.toLowerCase();
+    if(typeof num=="string")
+    {
+    	if(num.checkNumeric()!="P1" && num.checkNumeric()!="M1")
+    	{
+    		throw "The second parameter must be a Integer. \n You passed: " + num;
+        	return false;
+    	}
+    	num = parseInt(num,10);
+    }
+    if(typeof num!="number"){
+    
+        throw "The second parameter must be a number. \n You passed: " + num;
+        return false;
+    }
+    num = new Number(num);
+    
+    var retDate = new Date(this.getFullYear(), this.getMonth(), this.getDate(), this.getHours(), this.getMinutes(), this.getSeconds(), this.getMilliseconds());
+    switch(interval.toLowerCase()){
+        case "yyyy": {// year
+            retDate.setFullYear(this.getFullYear() + num);
+            break;
+        }
+        case "q": {        // quarter
+            retDate.setMonth(this.getMonth() + (num*3));
+            break;
+        }
+        case "m": {        // month
+            retDate.setMonth(this.getMonth() + num);
+            break;
+        }
+        case "y":        // day of year
+        case "d":        // day
+        case "w": {        // weekday
+            retDate.setDate(this.getDate() + num);
+            break;
+        }
+        case "ww": {    // week of year
+            retDate.setDate(this.getDate() + (num*7));
+            break;
+        }
+        case "h": {        // hour
+            retDate.setHours(this.getHours() + num);
+            break;
+        }
+        case "n": {        // minute
+            retDate.setMinutes(this.getMinutes() + num);
+            break;
+        }
+        case "s": {        // second
+            retDate.setSeconds(this.getSeconds() + num);
+            break;
+        }
+        case "ms": {        // second
+            retDate.setMilliseconds(this.getMilliseconds() + num);
+            break;
+        }
+        default: {
+        
+            throw    "The first parameter must be a string from this list: \n" +
+                    "yyyy, q, m, y, d, w, ww, h, n, s, or ms. You passed: " + interval;
+            return false;
+        }
+    }
+    return retDate;
+};
+Date.prototype.dateDiff = function (interval, dt){
+	
+	 
+	if(dt instanceof String)
+    {
+    	if(dt.checkDate()=="")
+    	{
+    		throw "The second parameter format is not supported. 'YYYY-MM-DD HH:MI:SS' or 'YYYY-MM-DD' or 'HH:MI:SS' \n You passed: " + num;
+        	return false;
+    	}
+    	dt = dt.toDate();
+    }
+    if(!(dt instanceof Date)){
+    
+        throw "The second parameter must be a Date. \n You passed: " + num;
+        return false;
+    }
+	 var d1=this;
+	 var d2=dt;
+	 switch(interval.toLowerCase()){
+	 case "s":
+		 	var t2 = d2.getTime();
+	        var t1 = d1.getTime();
+	 
+	        return parseInt((t2-t1)/(1000));
+	  case "n":
+	 	var t2 = d2.getTime();
+        var t1 = d1.getTime();
+ 
+        return parseInt((t2-t1)/(60*1000));
+	 case "d":
+	 	var t2 = d2.getTime();
+        var t1 = d1.getTime();
+ 
+        return parseInt((t2-t1)/(24*3600*1000));
+        
+	 case "y":
+	 	return d2.getFullYear()-d1.getFullYear();
+	 case "m":
+	 	var d1Y = d1.getFullYear();
+        var d2Y = d2.getFullYear();
+        var d1M = d1.getMonth();
+        var d2M = d2.getMonth();
+ 
+        return (d2M+12*d2Y)-(d1M+12*d1Y);
+	 case "w":
+	 	var t2 = d2.getTime();
+        var t1 = d1.getTime();
+ 
+        return parseInt((t2-t1)/(24*3600*1000*7));
+     default:
+      throw    "The first parameter must be a string from this list: \n" +
+                    "y, d, n, m, or w. You passed: " + interval;
+     	return false;
+	}
+	return null;
+};
+Date.prototype.getFirstDayInMonth = function ()
+{
+	return this.formatString("yyyy-mm-01").toDate();
+};
+
+Date.prototype.getLastDayInMonth = function ()
+{
+	return this.dateAdd("m", 1).getFirstDayInMonth().dateAdd("d", -1);
+};
+
+
+Date.prototype.getDayName = function ()
+{
+	switch(this.getDay())
+	{
+		case 0:
+			return "일";
+		case 1:
+			return "월";
+		case 2:
+			return "화";
+		case 3:
+			return "수";
+		case 4:
+			return "목";
+		case 5:
+			return "금";
+		case 6:
+			return "토";
+		default:
+			break;
+			
+	}
+	return "";
+};
+
+Date.prototype.formatString = function (fmt)
+{
+	var retval=fmt;
+	//yyyy to year
+	retval=retval.replace(/yyyy/g, this.getFullYear().formatString(null, 4));
+	//yy to year double digits
+	retval=retval.replace(/yy/g, this.getFullYear().formatString(null, 2).right(2));
+	
+	//mm to month double digits
+	retval=retval.replace(/mm/g, (this.getMonth()+1).formatString(null, 2));
+	
+	//dd to date double digits
+	retval=retval.replace(/dd/g, this.getDate().formatString(null, 2));
+	
+	//hh to hours double digits
+	retval=retval.replace(/hh/g, this.getHours().formatString(null, 2));
+	
+	//mi to minutes double digits
+	retval=retval.replace(/mi/g, this.getMinutes().formatString(null, 2));
+	
+	//ss to seconds double digits
+	retval=retval.replace(/ss/g, this.getSeconds().formatString(null, 2));
+	
+	//ms to seconds double digits
+	retval=retval.replace(/ms/g, this.getMilliseconds().formatString(null, 3));
+	
+	//wd to seconds double digits
+	retval=retval.replace(/dn/g, this.getDayName());
+	
+	return retval;
+};
+
+String.prototype.isDate = function() {
+	if (this.length != 8) return false;
+	oDate = new Date();
+	oDate.setFullYear(this.substring(0, 4), this.substring(4, 6) - 1, this.substring(6));
+	if (oDate.getFullYear() != this.substring(0, 4) || oDate.getMonth() + 1 != this.substring(4, 6) || oDate.getDate() != this.substring(6)) return false;
+	return true;
+};
+
+/**
+ * 정규식에 쓰이는 특수문자를 찾아서 이스케이프
+ */
+String.prototype.meta = function() {
+	var str = this;
+	var returnStr = "";
+
+	for ( var i = 0; i < str.length; i++) {
+		if ((/([\$\(\)\*\+\.\[\]\?\\\^\{\}\|]{1})/).test(str.charAt(i))) returnStr += str.charAt(i).replace((/([\$\(\)\*\+\.\[\]\?\\\^\{\}\|]{1})/), "\\$1");
+		else returnStr += str.charAt(i);
+	}
+
+	return returnStr;
+};
+
+/**
+ * 문자열 삭제
+ */
+String.prototype.removeAll = function(args) {
+	var str = this;
+	if (args != null && args.length > 0) for ( var i = 0; i < args.length; i++)
+		str = str.replaceAll(args[i], "");
+	return str.toString();
+};
+
+String.prototype.replaceAll = function(regex, replacement) {
+	var temp_str = "";
+	if (this.trim() != "" && regex != replacement) {
+		temp_str = this.trim();
+		while (temp_str.indexOf(regex) > -1)
+			temp_str = temp_str.replace(regex, replacement);
+	}
+	return temp_str;
+};
+
+String.prototype.startsWith = function(str) {
+	return this.indexOf(str) == 0;
+};
+/**
+ * 빈칸여부 체크
+ */
+String.prototype.isSpace = function() {
+	if (this.indexOf(" ") > -1) return true;
+	else return false;
+};
+

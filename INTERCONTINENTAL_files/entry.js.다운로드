@@ -1,0 +1,489 @@
+function loadFixed() {
+  var $header = $('.header'),
+    $gnbDrop = $('.gnb__drop');
+  var _windowScrollTop = $(window).scrollTop(),
+    _headerOffsetTop = $header.offset().top;
+  if (_windowScrollTop > _headerOffsetTop && !$header.hasClass('is-fixed')) {
+    $header.addClass("is-fixed");
+    $gnbDrop.hide();
+  } else if(_windowScrollTop <= _headerOffsetTop && $header.hasClass('is-fixed')) {
+    $header.removeClass("is-fixed");
+    $gnbDrop.hide();
+  }
+}
+
+function tabDetector() {
+  $("body").find(".tab-menu").each(function(){
+    var targetLink = $(this).children(".tab-menu__box").hasClass("is-unlink");
+    if(!targetLink) {
+      var tabCurrent = $(this).children(".tab-menu__box").children(".is-selected").children(".tab-menu__btn").attr("href");
+      $(tabCurrent).css({display:"block"});
+    } else {
+      $(this).siblings(".tab-contents").css({display:"block"});
+    }
+  });
+};
+
+function tabOpener(e) {
+  var targetLink = $(this).parent(".tab-menu__list").parent(".tab-menu__box").hasClass("is-unlink");
+  if(!targetLink) {
+    var a = $(this).parent();
+    a.siblings().removeClass("is-selected");
+    b = a.attr("class");
+    a.addClass("is-selected");
+    c = a.children(".tab-menu__btn").attr("href");
+    a.parent(".tab-menu__box").parent(".tab-menu").siblings(".tab-contents").css({display:"none"});
+    $(c).css({display:"block"});
+    e.preventDefault();
+  }
+};
+
+
+function accordionOpener(e) {
+  e.preventDefault();
+  var chkSelected = $(this).parent(".accordion-list__listbox").hasClass("is-selected");
+  var clickedLi = $(this).parent(".accordion-list__listbox");
+  if(chkSelected) {
+    clickedLi.removeClass("is-selected");
+    clickedLi.children(".accordion-list__body").slideUp("100");
+
+  } else {
+
+    clickedLi.addClass("is-selected");
+    clickedLi.children(".accordion-list__body").slideDown("100");
+    clickedLi.siblings(".accordion-list__listbox").removeClass("is-selected");
+    clickedLi.siblings(".accordion-list__listbox").children(".accordion-list__body").slideUp("100");
+  }
+}
+
+
+$(document).ready(function(){
+
+  var $window = $(window),
+    $document = $(document),
+    $html = $('html'),
+    $body = $('body');
+
+  // gnb : s
+  loadFixed();
+  var depth1_ach = $('.gnb__list'),
+    depth2_ach = $('.gnb__drop');
+  depth1_ach.find('.gnb__anchor').on('mouseenter focus', function() {
+    depth2_ach.hide();
+    $(this).next().show();
+  });
+  depth1_ach.on('mouseleave', function() {
+    depth2_ach.hide();
+  });
+  // gnb : e
+
+  // selecbox : s
+  $('.selectbox--type1 select').niceSelect();
+  // selectbox : e
+
+  // accordion: s
+  $(".js-accordion").find(".accordion-list__header").bind("click", accordionOpener);
+  // accordion : e
+
+  // tab-menu : s
+  tabDetector();
+  $(".tab-menu .tab-menu__btn").bind("click", tabOpener);
+  // tab-menu : e
+
+  // placeholder : s
+  var input = document.createElement("input");
+  if(('placeholder' in input)==false) {
+    $('[placeholder]').focus(function() {
+      var i = $(this);
+      if(i.val() == i.attr('placeholder')) {
+        i.val('').removeClass('placeholder');
+        if(i.hasClass('password')) {
+          i.removeClass('password');
+          this.type='password';
+        }
+      }
+    }).blur(function() {
+      var i = $(this);
+      if(i.val() == '' || i.val() == i.attr('placeholder')) {
+        if(this.type=='password') {
+          i.addClass('password');
+          this.type='text';
+        }
+        i.addClass('placeholder').val(i.attr('placeholder'));
+      }
+    }).blur().parents('form').submit(function() {
+      $(this).find('[placeholder]').each(function() {
+        var i = $(this);
+        if(i.val() == i.attr('placeholder'))
+          i.val('');
+      })
+    });
+  }
+  // placeholder : e
+
+  // modal : s
+  $('.js-modal__btn-open').on('click', function(e) {
+    e.preventDefault();
+    var _$this = $(this),
+      _$modal = $(_$this.attr('href'));
+    if(_$modal.length > 0) _$modal.addClass('is-expanded').attr('tabindex', '0').focus();
+  });
+  $('.js-modal__btn-close').on('click', function(e) {
+    e.preventDefault();
+    var _$this = $(this),
+        _$modal = _$this.closest('.js-modal'),
+        _$btn = $(_$this.attr('href'));
+    _$modal.removeClass('is-expanded').attr('tabindex', '-1');
+    if(_$btn.length > 0) _$btn.focus();
+  });
+  // modal : e
+
+  // quantity : s
+  var $quantityBtnPlus = $('.js-quantity__btn--plus'),
+    $quantityBtnMinus = $('.js-quantity__btn--minus'),
+    $quantityInput = $('.js-quantity__input-text');
+  var quantityChange = function(type) {
+    var _$this = $(this),
+      _$quantity = _$this.closest('.js-quantity'),
+      _$quantityInput = _$quantity.find('.js-quantity__input-text');
+    var quantityType = type,
+      quantityVal = _$quantityInput.val().replace(/[^0-9]/g, '');
+    if(quantityType == 'plus') {
+      quantityVal++;
+    } else if(quantityType == 'minus') {
+      quantityVal--;
+      if(quantityVal < 0) quantityVal = 0;
+    }
+    _$quantityInput.val(quantityVal);
+  };
+  $quantityBtnPlus.on('click', function(e) {
+    quantityChange.call($(this), 'plus');
+  });
+  $quantityBtnMinus.on('click', function(e) {
+    quantityChange.call($(this), 'minus');
+  });
+  $quantityInput.on('keyup keydown keypress', function() {
+    var _$this = $(this),
+      _val = _$this.val().replace(/[^0-9]/g, '');
+    _$this.val(_val.length == 0 ? 1 : _val);
+  });
+  // quantity : e
+
+  // carousel basic : s
+  var $carouselBasic = $('.js-carousel-basic'),
+    $carouselBasicScreen = $carouselBasic.find('.js-carousel-basic__screen'),
+    $carouselBasicBtnPrev = $carouselBasic.find('.js-carousel-basic__controller-btn--prev'),
+    $carouselBasicBtnNext = $carouselBasic.find('.js-carousel-basic__controller-btn--next'),
+    $carouselBasicIndicator = $carouselBasic.find('.js-carousel-basic__indicator'),
+    $carouselBasicSlick = null;
+  $carouselBasicSlick = $carouselBasicScreen.slick({
+    infinite: true,
+    dots: true,
+    customPaging: function(slider, i) {
+      return '<button type="button">' + (i+1) +  '번 슬라이드 보기</button>';
+    },
+    appendDots: $carouselBasicIndicator,
+    centerPadding: 100,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    prevArrow: $carouselBasicBtnPrev,
+    nextArrow: $carouselBasicBtnNext
+  });
+  // carousel basic : e
+
+  // carousel dual : s
+  var $carouselDual = $('.js-carousel-dual');
+  $carouselDual.each(function() {
+    var _$this = $(this),
+      _$carouselDualScreen = _$this.find('.js-carousel-dual__screen'),
+      _$carouselDualBtnPrev = _$this.find('.js-carousel-dual__controller-btn--prev'),
+      _$carouselDualBtnNext = _$this.find('.js-carousel-dual__controller-btn--next'),
+      _$carouselDualPaging = _$this.find('.js-carousel-triple__paging'),
+      _$carouselDualPagingCurrent = _$this.find('.js-carousel-triple__paging-current'),
+      _$carouselDualPagingTotal = _$this.find('.js-carousel-triple__paging-total'),
+      _$carouselDualSlick = null;
+    var _slidesToScroll = _$this.data('slides-to-scroll') ? _$this.data('slides-to-scroll') : 1;
+    if(_$this.data('paging') == true) {
+      _$carouselDualScreen.on('init afterChange', function(e, slick, currentSlide, nextSlide) {
+        var _i = currentSlide ? currentSlide : 0,
+          _itemCount = _slidesToScroll;
+        _$carouselDualPagingCurrent.text(Math.ceil((_i + 1)/_itemCount));
+        _$carouselDualPagingTotal.text(Math.ceil(slick.slideCount/_itemCount));
+        if(Math.ceil(slick.slideCount/_itemCount) == 1) {
+          _$carouselDualPaging.addClass('is-hidden');
+        } else {
+          _$carouselDualPaging.removeClass('is-hidden');
+        }
+      });
+    }
+    _$carouselDualSlick = _$carouselDualScreen.slick({
+      infinite: false,
+      dots: false,
+      centerPadding: 100,
+      slidesToShow: 2,
+      slidesToScroll: _slidesToScroll,
+      prevArrow: _$carouselDualBtnPrev,
+      nextArrow: _$carouselDualBtnNext
+    });
+  });
+  // carousel dual : e
+
+  // carousel triple : s
+  var $carouselTriple = $('.js-carousel-triple'),
+    $carouselTripleScreen = $carouselTriple.find('.js-carousel-triple__screen'),
+    $carouselTripleBtnPrev = $carouselTriple.find('.js-carousel-triple__controller-btn--prev'),
+    $carouselTripleBtnNext = $carouselTriple.find('.js-carousel-triple__controller-btn--next'),
+    $carouselTripleSlick = null;
+  $carouselTripleSlick = $carouselTripleScreen.slick({
+    infinite: true,
+    dots: false,
+    centerPadding: 100,
+    slidesToShow: 3,
+    slidesToScroll: 3,
+    prevArrow: $carouselTripleBtnPrev,
+    nextArrow: $carouselTripleBtnNext
+  });
+  // carousel triple : e
+
+  // carousel for nav : s
+  var $carouselNavFor = $('.js-carousel-nav-for'),
+    $carouselForScreen = $carouselNavFor.find('.js-carousel__for-screen'),
+    $carouselNavScreen = $carouselNavFor.find('.js-carousel__nav-screen'),
+    $carouselNavList = $carouselNavScreen.find('.js-carousel__nav-list'),
+    $carouselNavBtnPrev = $carouselNavFor.find('.js-carousel__nav-controller-btn--prev'),
+    $carouselNavBtnNext = $carouselNavFor.find('.js-carousel__nav-controller-btn--next'),
+    $carouselForSlick = null,
+    $carouselNavSlick = null;
+  $carouselForSlick = $carouselForScreen.slick({
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    dots: false,
+    arrows: false,
+    fade: true,
+    asNavFor: $carouselNavSlick
+  });
+  $carouselNavSlick = $carouselNavScreen.slick({
+    infinite: false,
+    slidesToShow: 4,
+    slidesToScroll: 1,
+    dots: false,
+    focusOnSelect: true,
+    asNavFor: $carouselForSlick,
+    prevArrow: $carouselNavBtnPrev,
+    nextArrow: $carouselNavBtnNext
+  });
+  $carouselForSlick.on('beforeChange', function(e, slick, currentSlide, nextSlide) {
+    $carouselNavList.removeClass('is-selected').eq(nextSlide).addClass('is-selected').click();
+  });
+  if(!$carouselNavList.length == 0) $carouselNavList.eq(0).addClass('is-selected');
+  // carousel for nav : e
+
+  // carousel indicator : s
+  var $carouselIndicator = $('.js-carousel-indicator');
+  $carouselIndicator.each(function() {
+    var _$this = $(this),
+      _$carouselIndicatorScreen = _$this.find('.js-carousel-indicator__screen'),
+      _$carouselIndicatorIndicator = _$this.find('.js-carousel-indicator__indicator'),
+      _$carouselIndicatorBtnPrev = _$this.find('.js-carousel-indicator__controller-btn--prev'),
+      _$carouselIndicatorBtnNext = _$this.find('.js-carousel-indicator__controller-btn--next'),
+      _$carouselIndicatorSlick = null;
+    _$carouselIndicatorSlick = _$carouselIndicatorScreen.slick({
+      infinite: true,
+      dots: true,
+      appendDots: _$carouselIndicatorIndicator,
+      arrows: true,
+      prevArrow: _$carouselIndicatorBtnPrev,
+      nextArrow: _$carouselIndicatorBtnNext,
+      slidesToShow: 1,
+      slidesToScroll: 1
+    });
+    if(_$this.data('arrows')) {
+      _$carouselIndicatorScreen.slick('slickSetOption', 'arrows', true, true, true);
+    }
+  });
+  // carousel indicator : e
+
+  // top btn : s
+  var $topBtnArea = $('.js-top-btn'),
+    $topBtn = $topBtnArea.find('.js-top-btn__btn');
+  $topBtn.on('click', function(e) {
+    e.preventDefault();
+    $html.animate({'scrollTop': 0}, 200);
+  });
+  var topBtnScroll = function() {
+    var _$footer = $('.footer'),
+      _$contents = $("#contents");
+    var _windowTop = $window.scrollTop(),
+      _windowHeight = $window.height(),
+      _margin = 0,
+      _btnTop = $topBtnArea.offset().top,
+      _contOffset = _$contents.offset().top,
+      _btnTopLimit = _$footer.offset().top - ($topBtnArea.height() + _margin),
+      _posBottom = _$footer.outerHeight() + _margin;
+    if(_windowTop == 0) {
+      $topBtnArea.removeClass('is-show');
+      return false;
+    }
+    if($topBtnArea.hasClass('is-show') === false) {
+      $topBtnArea.addClass('is-show');
+    }
+    if(_windowTop > _contOffset) {
+      $topBtnArea.addClass('is-keep');
+    } else {
+      $topBtnArea.removeClass('is-keep');
+    }
+    if(_btnTop >= _btnTopLimit && !$topBtnArea.hasClass('is-limit')) {
+      $topBtnArea.addClass('is-limit').css('bottom', _posBottom);
+      _btnTop = $topBtnArea.offset().top;
+    }
+    if(_windowTop + _windowHeight <= _btnTop + $topBtnArea.height() + _margin) {
+      $topBtnArea.removeClass('is-limit').css('bottom', '');
+    }
+  };
+  // top btn : e
+
+  // quick menu : s
+  var $quickMenu = $('.js-quick-menu');
+  if($quickMenu.length) {
+    var _quickMenuTopBase = parseInt($quickMenu.css('top'));
+    var quickMenuScroll = function() {
+      var _$footer = $('.footer');
+      var _windowTop = $window.scrollTop(),
+        _documentHeight = $document.height(),
+        _margin = 20,
+        _quickMenuTop = $quickMenu.offset().top,
+        _quickMenuTopLimit = _$footer.offset().top - ($quickMenu.height() + _margin),
+        _posTop = _documentHeight - $quickMenu.height() - (_$footer.outerHeight() + _margin);
+      if($topBtnArea) {
+        _quickMenuTopLimit = _quickMenuTopLimit - $topBtnArea.height();
+        _posTop = _posTop - $topBtnArea.height() - _margin;
+      }
+      if(_quickMenuTop >= _quickMenuTopLimit && !$quickMenu.hasClass('is-limit')) {
+        $quickMenu.addClass('is-limit').css('top', _posTop);
+        _quickMenuTop = $quickMenu.offset().top;
+      }
+      if(_windowTop + _quickMenuTopBase <= _quickMenuTop) {
+        $quickMenu.removeClass('is-limit').css('top', '');
+      }
+    };
+    $(window).on('scroll resize', function() {
+      quickMenuScroll();
+    });
+  }
+  // quick menu : e
+
+  // modal reservation : s
+  var $modalReservation = $('#modal-reservation'),
+    $modalReservationTab = $modalReservation.find('.js-modal-reservation__tab');
+  $modalReservationTab.on('click', function(e) {
+    e.preventDefault();
+    var _modalReservationTabIndex = $(this).index();
+    $modalReservationTab.each(function(i, el) {
+      var _$this = $(this),
+        _reservationClass = _$this.data('reservation-class');
+      $modalReservation.removeClass(_reservationClass);
+      if(_modalReservationTabIndex == i) {
+        $modalReservation.addClass(_reservationClass);
+      }
+    });
+  });
+  // modal reservation : e
+
+  // toggle click is-expanded : s
+  var $toggleClickBtn = $('.js-toggle-click__btn');
+  $toggleClickBtn.on('click', function() {
+    var _$this = $(this),
+      _$target = _$this.closest('.js-toggle');
+    if(_$target.hasClass('is-expanded')) {
+      _$target.removeClass('is-expanded');
+      _$this.attr('aria-expanded', false);
+    } else {
+      _$target.addClass('is-expanded');
+      _$this.attr('aria-expanded', true);
+    }
+  });
+  // toggle click is-expanded : e
+
+  // toggle mouse is-expanded : s
+  var $toggleMouseenterBtn = $('.js-toggle-mouseenter__btn');
+  $toggleMouseenterBtn.on('mouseenter', function() {
+    var _$this = $(this),
+      _$target = _$this.closest('.js-toggle');
+    _$target.addClass('is-expanded');
+    _$this.attr('aria-expanded', true);
+    _$target.on('mouseleave', function() {
+      _$target.off('mouseleave');
+      _$target.removeClass('is-expanded');
+      _$this.attr('aria-expanded', false);
+    });
+  });
+  // toggle mouse is-expanded : e
+
+
+  // modal Transfer : s
+  var $modalTransfer = $('.modal-transfer'),
+    $modalTransferTab = $modalTransfer.find('.js-modal-transfer__tab');
+  $modalTransferTab.on('click', function(e) {
+    e.preventDefault();
+    var _modalTransferTabIndex = $(this).index();
+    $modalTransferTab.each(function(i, el) {
+      var _$this = $(this),
+        _transferClass = _$this.data('transfer-class');
+      $modalTransfer.removeClass(_transferClass);
+      if(_modalTransferTabIndex == i) {
+        $modalTransfer.addClass(_transferClass);
+      }
+    });
+  });
+  // modal Transfer : e
+
+  // overview visual : s
+  var $overviewVisual = $('.title__image');
+  if($overviewVisual.length) {
+    var $overviewVisualImage = $('.title__image img');
+    $(window).on('scroll.overviewVisual', function() {
+      var _windowScrollTop = $(window).scrollTop(),
+        _windowHeight = $(window).height(),
+        _overviewOffsetTop = $overviewVisual.offset().top,
+        _overviewHeight = $overviewVisual.height(),
+        _overviewMargin = 0;
+      if(_overviewOffsetTop - _overviewMargin  < _windowScrollTop) {
+        var _overviewActivePercent = ((_windowScrollTop - _overviewOffsetTop + _overviewMargin) / _overviewHeight * 100),
+          _transformY = 0;
+        _overviewActivePercent = _overviewActivePercent > 100 ? 100 : _overviewActivePercent;
+        _transformY = 200 * (_overviewActivePercent/100);
+        _transformY = _transformY < 0 ? 0 : _transformY;
+        $overviewVisualImage.css('transform', 'matrix(1, 0, 0, 1, 0, '+_transformY+')');
+      } else {
+        $overviewVisualImage.css('transform', 'matrix(1, 0, 0, 1, 0, 0)');
+      }
+    });
+  }
+  // overview visual : e
+
+  // window scroll : s
+  $(window).on('scroll', function(){
+    loadFixed();
+    topBtnScroll();
+  });
+  // window scroll : e
+
+  // window resize : s
+  $(window).on('resize', function(){
+    topBtnScroll();
+  });
+  // window resize : e
+
+  // nice scroll : s
+  $html.niceScroll();
+  var documentHeight = $html.height();
+  $(window).on('scroll.nicescroll', function() {
+    var _documentHeight = $html.height();
+    if(documentHeight != _documentHeight) {
+      documentHeight = _documentHeight;
+      $html.getNiceScroll().resize();
+    }
+  });
+  // nice scroll : e
+
+});

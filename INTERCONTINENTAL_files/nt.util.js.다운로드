@@ -1,0 +1,108 @@
+
+
+/**
+ *  아이디 체크 영어와 숫자만 체크 첫글자는 영어로 시작
+ */
+String.prototype.isUserId = function() {
+	//return (/^[A-Za-z]{1}[0-9a-zA-Z!@$%^&*]{4,11}$/).test(this) ? true : false;
+	return (/^[a-z]{1}[0-9a-z!@$%^&*]{4,11}$/).test(this) ? true : false; //대문자 제거
+};
+//한글 포함여부
+String.prototype.isKor = function(){
+	return (/[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/g).test(this) ? true : false;
+}
+//영문 숫자 포함여부 
+String.prototype.isEng = function(){
+	return (/^[a-z0-9]+$/).test(this) ? true : false;
+}
+//영어만
+String.prototype.isOnlyEng = function(){
+	return (/^[a-zA-Z]+$/).test(this) ? true : false;
+}
+//대문자 포함여부 
+String.prototype.isUpper = function(){
+	return (/[A-Z]/g).test(this) ? true : false;
+}
+//스페이스 포함여부 
+String.prototype.isSpace = function(){
+	return (/\s/g).test(this) ? true : false;
+}
+//특수문자 포함 여부 
+String.prototype.isSpecial = function(){
+	return (/[~!@#$%^*()\-_=+\\\|\[\]{};:\'",.<>\/?]/g).test(this) ? true : false;
+}
+
+/**
+ * 비밀번호 체크 - 영문 숫자 조합으로 구성
+ */
+String.prototype.isUserPwd = function() {
+	//var regx = /(?=([a-zA-Z0-9].*(\W))|((\W).*[a-zA-Z0-9])$).{8,12}/;
+	var regx = /(?=([a-z0-9].*(\W))|((\W).*[a-z0-9])$).{8,12}/; //대문자 제거
+	return (!regx.test(this))? false : true;
+//	return (/^[0-9A-Za-z]{1}[0-9a-zA-Z!@$%^&*]{8,12}$/).test(this) ? true : false;
+};
+String.prototype.isUserPwd2 = function() {
+	var reg1 = /^[a-z0-9]{10,20}$/;
+	var reg2 = /[a-z]/g;
+	var reg3 = /[0-9]/g;
+	return ( reg1.test(this) && reg2.test(this) && reg3.test(this) );
+};
+
+
+	
+//숫자만입력
+function preventEventByKey(event, type) 
+{
+	event = event || window.event;
+	var keyID = (event.which) ? event.which : event.keyCode;
+
+	if((keyID >= 37 && keyID <= 40) || keyID == 7 || keyID == 8 || keyID == 9 || keyID == 127)
+	{
+		return true;
+	}
+	
+	if(type == "NUMBER")
+	{
+		if( (keyID >= 48 && keyID <= 57) || (keyID >= 96 && keyID <= 105)) {
+			return true;
+		}
+		else{
+			return false;
+		}
+	} else if(type == "ENGLISH") {
+		if( (keyID >= 65 && keyID <= 90) || (keyID >= 97 && keyID <= 122)) {
+			return true;
+		}
+		else{
+			return false;
+		}
+	}
+}
+
+function hangul(){
+	if((event.keyCode < 12592) || (event.keyCode > 12687)){
+		//console.log("한글만입력");
+		event.returnValue = false
+	}
+}
+
+//이메일 체크
+$(document).on("keyup", "input:text[emailOnly]", function() {
+	var rexp = /[^\!-z]/gi;
+	$(this).val( $(this).val().replace(rexp,"") );
+});
+
+//한글만korOnly='true' --테스트결과 IE에서 안먹을 때가 종종있음.
+$(document).on("keyup", "input:text[korOnly]", function() {
+	$(this).val( $(this).val().replace(/[a-z0-9]|[ \[\]{}()<>?|`~!@#$%^&*-_+=,.;:\"\\]/g,"") );
+});
+
+//숫자만numberonly='true'
+$(document).on("keyup", "input:text[numberOnly]", function() {
+	$(this).val( $(this).val().replace(/[^0-9]/gi,"") );
+});
+
+//영문만engOnly='true'
+$(document).on("keyup", "input:text[engOnly]", function() {
+	$(this).val( $(this).val().replace(/[0-9]|[^\!-z]/gi,"") );
+});

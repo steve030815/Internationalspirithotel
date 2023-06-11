@@ -1,0 +1,251 @@
+$(document).ready(function() {	
+	//상단배너
+	if($("#bgColor").val() != "")
+	{
+		$("#notiBnr").css("background",$("#bgColor").val());
+	}
+	
+	//SEO대응
+	try{
+		var pathname = window.location.pathname; // Returns path only
+				
+		//메타 디스크립션 각 페이지 언어별 설명으로 대체(없으면 기본설정값)
+		var metaDescription = $('.service-overview-header__desc, .service-detail-summary__desc, .meta_desc, .service-overview__desc').text();
+		if(metaDescription=='' || metaDescription==null || metaDescription==undefined || metaDescription==0 || metaDescription==NaN){
+			//페이지 헤더에 설정된 기본값
+		}else{
+			if(pathname=="/grandicparnas/eng/meeting" || pathname=="/iccoex/eng/room/Intro"){
+				//메타 디스크립션 재설정 안함
+			}else{
+				var $meta = $('meta[name=description]').attr('content', metaDescription);				
+			}
+
+		}
+		
+		//h1태그 각 페이지 언어별 타이틀로 대체(없으면 기본 설정값)
+		var h1 = $('.service-overview-header__img img').attr('alt') || $('.service-detail-header__title').text();
+		if(h1=='' || h1==null || h1==undefined || h1==0 || h1==NaN){
+			//페이지 헤더에 설정된 기본값
+		}else{
+			$('h1 a').text(h1);
+		}
+	}catch(e){
+		
+	}
+});
+
+function showBookLayer(promotionCode) {
+	$('#modal-reservation').show();
+	//프로모션코드 추가
+	if(promotionCode != null && promotionCode != undefined){
+		$('#promotionCode').val(promotionCode);
+	} else{
+		$('#promotionCode').val('');
+	}
+}
+
+//CODY와 IHG 분기
+function showBookLayer2(promotionCode, rendingCode) {
+	
+	if(String(rendingCode) == "undefined") {
+		rendingCode = "I";
+	}
+	
+	if(rendingCode == "C") {
+		
+		if(typeof(hotelCode) == "undefined") {
+			alert("호텔이 선택되지 않았습니다.");
+		} else {
+			
+			var checkInDate = $('#checkInDate').val();
+			var checkOutDate = $('#checkOutDate').val();
+			var room = roomVal;
+			var adult = adultVal;
+			var child = childVal;
+			var country = '';
+			var lang = '';
+			 
+			var _checkInDate = checkInDate.split(".").join("-");
+			var _checkOutDate = checkOutDate.split(".").join("-");
+			
+			var targetLink = "";
+			 
+			if(hotelCode == "SEOHA") { //그랜드
+				targetLink = "https://codybooking.com/reservation/?code=H0174&checkIn="+_checkInDate+"&checkOut="+_checkOutDate+"&lang=korean&adult="+adult+"&child="+child+"&room="+room+"&promCode="+promotionCode;
+			} else if(hotelCode == "SEOHB") { //코엑스
+				targetLink = "https://codybooking.com/reservation/?code=H0173&checkIn="+_checkInDate+"&checkOut="+_checkOutDate+"&lang=korean&adult="+adult+"&child="+child+"&room="+room+"&promCode="+promotionCode;
+			}
+			
+			window.open(targetLink);
+		}
+		
+	} else {
+		
+		$('#modal-reservation').show();
+		//프로모션코드 추가
+		if(promotionCode != null && promotionCode != undefined){
+			$('#promotionCode').val(promotionCode);
+		} else{
+			$('#promotionCode').val('');
+		}
+	}
+}
+
+function hideBookLayer() {
+	$('#modal-reservation').hide();
+}
+function fileValidation(input, ext, extText, fileSize){
+	var result = true;
+	if(input !== null){
+		var maxSize = fileSize*1024*1000; //5242880
+		//var ext = /JPG|JPEG|GIF|PNG/i;
+		var inputExt = input.name.split('.')
+		
+		if(input.size > maxSize){
+			alert('첨부파일은 ' + fileSize + 'M 이하만 가능합니다.');
+			result= false;
+		}
+		else if(ext.test(inputExt[1]) === false){
+			alert('첨부파일은 ' + extText + ' 만 가능합니다.');
+			result= false;
+		}
+	}
+	return result;
+}
+
+function setNewsletter(lang)
+{	
+	var msg;
+	var validMsg;
+	var successMsg;
+	
+	if(lang=="kor") validMsg = "뉴스레터 신청 완료된 이메일입니다. 감사합니다.";
+	else if(lang=="eng") validMsg = "You have successfully subscribed to our newsletter. Thank you.";
+	else if(lang=="chi") validMsg = "请重新确认电子邮件格式。";
+	else if(lang=="jpn") validMsg = "is required";
+	
+	if(lang=="kor") successMsg = "이메일 구독 신청이 완료되었습니다.";
+	else if(lang=="eng") successMsg = "You have successfully subscribed to our newsletter. Thank you.";
+	else if(lang=="chi") successMsg = "请重新确认电子邮件格式。";
+	else if(lang=="jpn") successMsg = "メールマガジン申込が完了しました。ありがとうございます。";
+	
+	if(!document.newsletterForm.newsEmail.value.trim())
+	{
+		if(lang=="kor") msg = "필수 정보입니다.";//请重新确认电子邮件格式。
+		else if(lang=="eng") msg = "Please check your email address.";
+		else if(lang=="chi") msg = "请重新确认电子邮件格式。";
+		else if(lang=="jpn") msg = "必須入力項目です。";
+		chkTypeMsg(msg);
+		document.newsletterForm.newsEmail.focus();
+		return;
+	} else{
+		$('#newsMsg').css('display','none');
+	}
+	if(!document.newsletterForm.newsEmail.value.trim().checkEmail() )
+	{
+		if(lang=="kor") msg = "올바른 이메일 주소가 아닙니다. 다시 확인해주세요.";//请重新确认电子邮件格式。
+		else if(lang=="eng") msg = "Please check your email address.";
+		else if(lang=="chi") msg = "请重新确认电子邮件格式。";
+		else if(lang=="jpn") msg = "E-メールアドレスを確認してください。";
+		chkTypeMsg(msg);
+		document.newsletterForm.newsEmail.focus();
+		return;
+	} else{
+		$('#newsMsg').css('display','none');		
+	}
+	
+	var queryString = "email=" + document.newsletterForm.newsEmail.value;
+	
+	$.ajax({
+        url: "/common/SetNewsletterAJX.ic",
+        method: 'POST',
+        dataType: 'JSON',
+        data: queryString ,
+        success: function(data) {
+            if(data.resultCode == "FAIL")
+            {
+                alert(validMsg);
+                return;
+            } else {
+                alert(successMsg);
+                location.reload();
+            }
+        },
+        error: function(xhr, status, error){
+            alert(error);
+            return;
+        }
+    });
+}
+
+function chkTypeMsg(msg)
+{
+	var filter = "win16|win32|win64|mac";
+	if(navigator.platform){
+
+		if(0 > filter.indexOf(navigator.platform.toLowerCase())){			
+			$('#newsMsg').css('display','block');
+			$('#newsMsg').html(msg);
+		} else{			
+			alert(msg);
+		}
+	}		
+}
+
+function showReservationPop(promotionCode) {
+	//모바일 용 reservationPop
+	var headPos = $("#head").offset().top;
+    $("#popReserve").attr("data-scroll", "" + headPos + "");
+    $("#popReserve").removeClass("blind");
+    $("body, #wrapper").addClass("no-scroll");
+    if(promotionCode != null && promotionCode != undefined){
+    	$('#p_rForm').find('input[name=promotionCode]').val(promotionCode);
+    } 
+}
+
+function showReservationPop2(promotionCode, rendingCode) {
+	
+	if(String(rendingCode) == "undefined") {
+		rendingCode = "I";
+	}
+	
+	if(rendingCode == "C") {
+		
+		if(typeof(hotelCode) == "undefined") {
+			alert("호텔이 선택되지 않았습니다.");
+		} else {
+			
+			var checkInDate = $('#checkInDate').val();
+			var checkOutDate = $('#checkOutDate').val();
+			var room = roomVal;
+			var adult = adultVal;
+			var child = childVal;
+			var country = '';
+			var lang = '';
+			 
+			var _checkInDate = checkInDate.split(".").join("-");
+			var _checkOutDate = checkOutDate.split(".").join("-");
+			
+			var targetLink = "";
+			 
+			if(hotelCode == "SEOHA") { //그랜드
+				targetLink = "https://codybooking.com/reservation/?code=H0174&checkIn="+_checkInDate+"&checkOut="+_checkOutDate+"&lang=korean&adult="+adult+"&child="+child+"&room="+room+"&promCode="+promotionCode;
+			} else if(hotelCode == "SEOHB") { //코엑스
+				targetLink = "https://codybooking.com/reservation/?code=H0173&checkIn="+_checkInDate+"&checkOut="+_checkOutDate+"&lang=korean&adult="+adult+"&child="+child+"&room="+room+"&promCode="+promotionCode;
+			}
+			
+			window.open(targetLink);
+		}
+		
+	} else {
+		
+		//모바일 용 reservationPop
+		var headPos = $("#head").offset().top;
+	    $("#popReserve").attr("data-scroll", "" + headPos + "");
+	    $("#popReserve").removeClass("blind");
+	    $("body, #wrapper").addClass("no-scroll");
+	    if(promotionCode != null && promotionCode != undefined){
+	    	$('#p_rForm').find('input[name=promotionCode]').val(promotionCode);
+	    } 
+	}
+}

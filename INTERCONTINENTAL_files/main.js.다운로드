@@ -1,0 +1,176 @@
+(function() {
+
+  'use strict';
+
+  var $window = $(window),
+    $document = $(document),
+    $html = $('html'),
+    $body = $('body');
+
+  var $mainNoticeAd = $('.main-notice-ad'),
+    $mainNoticeAdCloseBtn = $mainNoticeAd.find('.main-notice-ad__controller-btn-close');
+  $mainNoticeAdCloseBtn.on('click', function() {
+    $mainNoticeAd.animate({
+      marginTop: -$mainNoticeAd.height()
+    }, function() {
+      $mainNoticeAd.removeClass('is-expanded');
+    });
+  });
+
+  // visual skip : s
+  var $visualSKip = $('.js-visual-skip');
+  $visualSKip.on('click', function() {
+    var _$visualSkipStandard = $('.js-visual-skip__standard');
+    var _visualOffsetTop = _$visualSkipStandard.offset().top,
+      _visualHeight = _$visualSkipStandard.height(),
+      _visualMargin = -29;
+    $html.add($body).animate({'scrollTop':_visualOffsetTop+_visualHeight+_visualMargin}, 1000);
+  });
+  // visual skip : e
+
+  // main notice ad skip : s
+  $window.on('load.disableScroll', function() {
+    var _$header = $('.header');
+    var _windowScrollTop = $window.scrollTop(),
+      _headerOffsetTop = _$header.offset().top,
+      _targetPositionY = _headerOffsetTop,
+      _disableScrolling = false;
+    if(_windowScrollTop < _headerOffsetTop) {
+      $window.on('mousewheel.disableScroll DOMMouseScroll.disableScroll touchmove.disableScroll', function(e) {
+        e.preventDefault();
+        var _wheelDelta = -e.originalEvent.detail || e.originalEvent.wheelDelta;
+        if(_wheelDelta > 0) return false;
+        if(_disableScrolling === true) return false;
+        _disableScrolling = true;
+        $html.add($body).stop().animate({'scrollTop': _targetPositionY}, 600, function() {
+          $window.off('.disableScroll');
+        });
+      });
+    }
+  });
+  // main notice ad skip : e
+
+  // magic matrix : s
+  var $magicMatrix = $('.js-magic-matrix');
+  var regMatrix = /.*?\((.*?),(.*?),(.*?),(.*?),(.*?),(.*?)\)/,
+    defaultMatrix = [1, 0, 0, 1, 0, 0];
+  $magicMatrix.each(function() {
+    var _$this = $(this);
+    var _transform = _$this.css('transform'),
+      _transformMatrix = _transform.match(regMatrix);
+    _$this.data('matrix-origin', [_transformMatrix[1], _transformMatrix[2], _transformMatrix[3], _transformMatrix[4], _transformMatrix[5], _transformMatrix[6]]);
+  });
+  function setMatrix(_$magicMatrix, _magicMatrixActivePercent) {
+    var _magicMatrixAfter = [],
+      _magicMatrixBefore = _$magicMatrix.data('matrix-origin');
+    for(var i = 0; i < defaultMatrix.length; i++) {
+      var _difference = (_magicMatrixBefore[i] - defaultMatrix[i]);
+      var _differencePercent = _difference / 100 * _magicMatrixActivePercent;
+      _magicMatrixAfter.push(_magicMatrixBefore[i] - _differencePercent);
+    }
+    _$magicMatrix.css('transform', 'matrix(' + _magicMatrixAfter.join(',') + ')');
+  }
+  $window.on('scroll.magicMatrix', function() {
+    var _windowScrollTop = $window.scrollTop(),
+      _windowHeight = $window.height();
+    $magicMatrix.each(function() {
+      var _$this = $(this);
+      var _magicMatrixOffsetTop = _$this.offset().top,
+        _magicMatrixHeight = _$this.height(),
+        _magicMatrixMargin = _$this.data('magic-matrix-margin') ? _windowHeight/_$this.data('magic-matrix-margin') : _windowHeight/8;
+      if(_magicMatrixOffsetTop - _windowHeight + _magicMatrixMargin < _windowScrollTop) {
+        var _magicMatrixActivePercent = ((_windowScrollTop - _magicMatrixOffsetTop - _magicMatrixMargin + _windowHeight) / _magicMatrixHeight * 100);
+        setMatrix(_$this, _magicMatrixActivePercent > 100 ? 100 : _magicMatrixActivePercent);
+      }
+    });
+  });
+  // magic matrix : e
+
+  // magic opacity : s
+  var $magicOpacity = $('.js-magic-opacity');
+  var defaultOpacity = 1;
+  $magicOpacity.each(function() {
+    var _$this = $(this);
+    var _opacity = _$this.css('opacity');
+    _$this.data('opacity-origin', _opacity);
+  });
+  function setOpacity(_$magicOpacity, _magicOpacityActivePercent) {
+    var _magicOpacityAfter = null,
+      _magicOpacityBefore = _$magicOpacity.data('opacity-origin'),
+      _difference = (_magicOpacityBefore - defaultOpacity),
+      _differencePercent = _difference / 100 * _magicOpacityActivePercent;
+    _magicOpacityAfter = _magicOpacityBefore - _differencePercent;
+    _$magicOpacity.css('opacity', _magicOpacityAfter);
+  }
+  $window.on('scroll.magicOpacity', function() {
+    var _windowScrollTop = $window.scrollTop(),
+      _windowHeight = $window.height();
+    $magicOpacity.each(function() {
+      var _$this = $(this);
+      var _magicOpacityOffsetTop = _$this.offset().top,
+        _magicOpacityHeight = _$this.height(),
+        _magicOpacityMargin = _$this.data('magic-opacity-margin') ? _windowHeight/_$this.data('magic-opacity-margin') : _windowHeight/3;
+      if(_magicOpacityOffsetTop - _windowHeight + _magicOpacityMargin < _windowScrollTop) {
+        var _magicOpacityActivePercent = ((_windowScrollTop - _magicOpacityOffsetTop - _magicOpacityMargin + _windowHeight) / _magicOpacityHeight * 100);
+        setOpacity(_$this, _magicOpacityActivePercent > 100 ? 100 : _magicOpacityActivePercent);
+      } else {
+        setOpacity(_$this, 0);
+      }
+    });
+  });
+  // magic opacity : e
+
+  // magic fadeIn : s
+  var $magicFadeIn = $('.js-magic-fadein');
+  $window.on('scroll.magicFadeIn', function() {
+    $magicFadeIn.each(function() {
+      var _$this = $(this);
+      var _windowScrollTop = $window.scrollTop(),
+        _windowHeight = $window.height(),
+        _magicFadeInOffsetTop = _$this.offset().top,
+        _magicFadeInHeight = _$this.height(),
+        _magicFadeInMargin = _$this.data('magic-fadein-margin') ? _$this.data('magic-fadein-margin') : _windowHeight/8;
+      if(!_$this.hasClass('is-animate')) {
+        if(_magicFadeInOffsetTop - _windowHeight + _magicFadeInMargin < _windowScrollTop) {
+          _$this.addClass('is-animate');
+        }
+      }
+    });
+  });
+  // magic fadeIn : e
+
+  
+
+
+  var $mainVisual = $('.js-main-visual');
+  $window.on('load', function() {
+    $mainVisual.addClass('is-animate');
+  });
+  
+ 
+  
+ 
+
+}());
+
+
+$(document).ready(function(){ 
+  function updateMasonry() {
+	  
+    var $gridMasonry = $('.js-grid-masonry');
+	$gridMasonry.masonry({
+	  transitionDuration: 0,
+	  itemSelector: '.js-grid-masonry__item',
+	  columnWidth: 392,
+	  gutter: 12
+    });
+  }
+
+  updateMasonry();
+  
+  //main sns Masonry
+  $('.main-sns .tab-menu__btn').click(function() {
+	  updateMasonry();
+  });
+})
+
